@@ -133,6 +133,9 @@ namespace AbilityRealizer
         {
             Setup();
 
+            if (pilotDef.abilityDefNames == null)
+                return;
+
             var matchingAbilities = new List<string>();
             var missingAbilities = new List<string>();
 
@@ -175,7 +178,9 @@ namespace AbilityRealizer
 
             if (reloadAbilities)
             {
-                pilotDef.AbilityDefs.Clear();
+                if (pilotDef.AbilityDefs != null)
+                    pilotDef.AbilityDefs.Clear();
+
                 pilotDef.ForceRefreshAbilityDefs();
                 HBSLog.Log($"\tForced refresh abilities");
             }
