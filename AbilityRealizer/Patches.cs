@@ -23,11 +23,11 @@ namespace AbilityRealizer
         public static ILog HBSLog;
 
         private static bool IsSetup = false;
-        public static SimGameConstants constants;
-        public static DataManager dataManager;
-        public static List<string> progressionAbilities;
+        private static SimGameConstants constants;
+        private static DataManager dataManager;
+        private static List<string> progressionAbilities;
 
-        public static void Setup()
+        private static void Setup()
         {
             if (IsSetup)
                 return;
@@ -54,7 +54,6 @@ namespace AbilityRealizer
 
             IsSetup = true;
         }
-
 
         public static AbilityDef GetAbilityDef(string abilityName)
         {
@@ -114,8 +113,7 @@ namespace AbilityRealizer
             return firstLevelAbilities < 2;
         }
 
-
-        private static void CheckAbilitiesFromProgession(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
+        public static void CheckAbilitiesFromProgession(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
         {
             for (int i = 0; i < progressionTable.Length && i < skillLevel; i++)
             {
@@ -131,8 +129,7 @@ namespace AbilityRealizer
             }
         }
 
-
-        public static void TryUpdateAbilities(PilotDef pilotDef)
+        internal static void TryUpdateAbilities(PilotDef pilotDef)
         {
             Setup();
 
