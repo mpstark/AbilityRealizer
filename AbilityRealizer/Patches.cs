@@ -10,7 +10,16 @@ using System.Reflection;
 namespace AbilityRealizer
 {
     [HarmonyPatch(typeof(Pilot), "InitAbilities")]
-    public static class PilotDef_refreshAbilityDefs_Patch
+    public static class Pilot_InitAbilities_Patch
+    {
+        public static void Prefix(Pilot __instance)
+        {
+            Main.TryUpdateAbilities(__instance.pilotDef);
+        }
+    }
+
+    [HarmonyPatch(typeof(Pilot), "CombatInitFromSave")]
+    public static class Pilot_CombatInitFromSave_Patch
     {
         public static void Prefix(Pilot __instance)
         {
@@ -180,6 +189,9 @@ namespace AbilityRealizer
             {
                 if (pilotDef.AbilityDefs != null)
                     pilotDef.AbilityDefs.Clear();
+
+                if (pilotDef.DataManager == null)
+                    pilotDef.DataManager = dataManager;
 
                 pilotDef.ForceRefreshAbilityDefs();
                 HBSLog.Log($"\tForced refresh abilities");
