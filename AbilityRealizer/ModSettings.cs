@@ -6,7 +6,7 @@ namespace AbilityRealizer
 {
     internal class ModSettings
     {
-        public List<string> IgnoreAbilities = new List<string> { "TraitDefWeaponHit", "TraitDefMeleeHit" };
+        public List<string> IgnoreAbilities = new List<string>();
         public bool AddTreeAbilities = true;
         public bool RemoveNonTreeAbilities = false;
 

@@ -93,7 +93,7 @@ namespace AbilityRealizer
 
                     if (pilotAbilityNames.Contains(abilityName))
                         matchingAbilities.Add(abilityName);
-                    else if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)))
+                    else
                         missingAbilities.Add(abilityName);
                 }
             }
@@ -157,7 +157,9 @@ namespace AbilityRealizer
             // remove abilities that don't exist anymore
             foreach (var abilityName in extraAbilities)
             {
-                if ((Settings.RemoveNonTreeAbilities && !progressionAbilities.Contains(abilityName)) || GetAbilityDef(dataManager, abilityName) == null)
+                if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)) &&
+                    ((Settings.RemoveNonTreeAbilities && !progressionAbilities.Contains(abilityName))
+                        || GetAbilityDef(dataManager, abilityName) == null))
                 {
                     HBSLog.Log($"{pilotDef.Description.Id}: Forgetting {abilityName}");
                     pilotDef.abilityDefNames.RemoveAll(x => x == abilityName);
@@ -168,7 +170,8 @@ namespace AbilityRealizer
             // add the missing abilities
             foreach (var abilityName in missingAbilities)
             {
-                if (Settings.AddTreeAbilities && CanLearnAbility(dataManager, pilotDef, abilityName))
+                if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)) &&
+                    Settings.AddTreeAbilities && CanLearnAbility(dataManager, pilotDef, abilityName))
                 {
                     HBSLog.Log($"{pilotDef.Description.Id}: Learning {abilityName}");
                     pilotDef.abilityDefNames.Add(abilityName);
