@@ -5,5 +5,11 @@
     "Version": "1.0.0",
     "Description": "Allows for ability mods to more easily exist.",
     "Author": "mpstark",
-    "Website": "www.github.com/mpstark/AbilityRealizer"
+    "Website": "www.github.com/mpstark/AbilityRealizer",
+
+    "Settings": {
+        "AddTreeAbilities": true,
+        "RemoveNonTreeAbilities": false,
+        "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ]
+    }
 }

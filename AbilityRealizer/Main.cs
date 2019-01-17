@@ -11,7 +11,7 @@ namespace AbilityRealizer
 {
     public static class Main
     {
-        internal static List<string> ignoreAbilities = new List<string> { "TraitDefWeaponHit", "TraitDefMeleeHit" };
+        internal static ModSettings Settings;
         internal static ILog HBSLog;
 
         // ENTRY POINT
@@ -20,6 +20,7 @@ namespace AbilityRealizer
             var harmony = HarmonyInstance.Create("io.github.mpstark.AbilityRealizer");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             HBSLog = Logger.GetLogger("AbilityRealizer");
+            Settings = ModSettings.Parse(modSettings);
         }
 
 
@@ -92,7 +93,7 @@ namespace AbilityRealizer
 
                     if (pilotAbilityNames.Contains(abilityName))
                         matchingAbilities.Add(abilityName);
-                    else if (!ignoreAbilities.Exists(x => x.StartsWith(abilityName)))
+                    else if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)))
                         missingAbilities.Add(abilityName);
                 }
             }
@@ -156,7 +157,7 @@ namespace AbilityRealizer
             // remove abilities that don't exist anymore
             foreach (var abilityName in extraAbilities)
             {
-                if (!progressionAbilities.Contains(abilityName) || GetAbilityDef(dataManager, abilityName) == null)
+                if ((Settings.RemoveNonTreeAbilities && !progressionAbilities.Contains(abilityName)) || GetAbilityDef(dataManager, abilityName) == null)
                 {
                     HBSLog.Log($"{pilotDef.Description.Id}: Forgetting {abilityName}");
                     pilotDef.abilityDefNames.RemoveAll(x => x == abilityName);
@@ -167,7 +168,7 @@ namespace AbilityRealizer
             // add the missing abilities
             foreach (var abilityName in missingAbilities)
             {
-                if (CanLearnAbility(dataManager, pilotDef, abilityName))
+                if (Settings.AddTreeAbilities && CanLearnAbility(dataManager, pilotDef, abilityName))
                 {
                     HBSLog.Log($"{pilotDef.Description.Id}: Learning {abilityName}");
                     pilotDef.abilityDefNames.Add(abilityName);
