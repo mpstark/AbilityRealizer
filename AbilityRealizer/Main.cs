@@ -11,6 +11,7 @@ namespace AbilityRealizer
 {
     public static class Main
     {
+        internal static List<string> ignoreAbilities = new List<string> { "TraitDefWeaponHit", "TraitDefMeleeHit" };
         internal static ILog HBSLog;
 
         // ENTRY POINT
@@ -91,7 +92,7 @@ namespace AbilityRealizer
 
                     if (pilotAbilityNames.Contains(abilityName))
                         matchingAbilities.Add(abilityName);
-                    else if (!abilityName.Contains("TraitDefWeaponHit") && !abilityName.Contains("TraitDefMeleeHit"))
+                    else if (!ignoreAbilities.Exists(x => x.StartsWith(abilityName)))
                         missingAbilities.Add(abilityName);
                 }
             }
