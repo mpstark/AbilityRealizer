@@ -8,7 +8,7 @@ namespace AbilityRealizer
     {
         public static void Prefix(Pilot __instance)
         {
-            Main.TryUpdateAbilities(__instance.pilotDef);
+            Main.TryUpdateAbilitiesFromTree(__instance.pilotDef);
         }
     }
 
@@ -17,7 +17,7 @@ namespace AbilityRealizer
     {
         public static void Prefix(Pilot __instance)
         {
-            Main.TryUpdateAbilities(__instance.pilotDef);
+            Main.TryUpdateAbilitiesFromTree(__instance.pilotDef);
         }
     }
 }

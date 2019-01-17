@@ -14,6 +14,7 @@ namespace AbilityRealizer
         internal static ModSettings Settings;
         internal static ILog HBSLog;
 
+
         // ENTRY POINT
         public static void Init(string modDir, string modSettings)
         {
@@ -136,7 +137,7 @@ namespace AbilityRealizer
 
 
         // MEAT
-        internal static void TryUpdateAbilities(PilotDef pilotDef)
+        internal static void TryUpdateAbilitiesFromTree(PilotDef pilotDef)
         {
             Setup();
 
