@@ -153,17 +153,12 @@ namespace AbilityRealizer
             var reloadAbilities = false;
             var extraAbilities = pilotDef.abilityDefNames.Except(matchingAbilities).ToList();
 
-            if (extraAbilities.Count > 0 || missingAbilities.Count > 0)
-                HBSLog.Log($"{pilotDef.Description.Id}");
-
             // remove abilities that don't exist anymore
             foreach (var abilityName in extraAbilities)
             {
-                HBSLog.Log($"\tMAYBE EXTRA ABILITY {abilityName}");
-
                 if (!progressionAbilities.Contains(abilityName) || GetAbilityDef(dataManager, abilityName) == null)
                 {
-                    HBSLog.Log($"\t\tForgetting ability {abilityName}");
+                    HBSLog.Log($"{pilotDef.Description.Id}: Forgetting {abilityName}");
                     pilotDef.abilityDefNames.RemoveAll(x => x == abilityName);
                     reloadAbilities = true;
                 }
@@ -172,11 +167,9 @@ namespace AbilityRealizer
             // add the missing abilities
             foreach (var abilityName in missingAbilities)
             {
-                HBSLog.Log($"\tMAYBE MISSING ABILITY {abilityName}");
-
                 if (CanLearnAbility(dataManager, pilotDef, abilityName))
                 {
-                    HBSLog.Log($"\t\tLearning {abilityName}");
+                    HBSLog.Log($"{pilotDef.Description.Id}: Learning {abilityName}");
                     pilotDef.abilityDefNames.Add(abilityName);
                     reloadAbilities = true;
                 }
@@ -191,7 +184,6 @@ namespace AbilityRealizer
                     pilotDef.DataManager = dataManager;
 
                 pilotDef.ForceRefreshAbilityDefs();
-                HBSLog.Log($"\tForced refresh abilities");
             }
         }
     }
