@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BattleTech;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -6,9 +7,11 @@ namespace AbilityRealizer
 {
     internal class ModSettings
     {
-        public List<string> IgnoreAbilities = new List<string>();
         public bool AddTreeAbilities = true;
         public bool RemoveNonTreeAbilities = false;
+        public List<string> IgnoreAbilities = new List<string>();
+        public Dictionary<Faction, List<string>> FactionAbilities = new Dictionary<Faction, List<string>>();
+        public Dictionary<string, List<string>> TagAbilities = new Dictionary<string, List<string>>();
 
         public static ModSettings Parse(string json)
         {

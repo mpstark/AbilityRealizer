@@ -8,7 +8,7 @@ namespace AbilityRealizer
     {
         public static void Prefix(Pilot __instance)
         {
-            Main.TryUpdateAbilitiesFromTree(__instance.pilotDef);
+            Main.TryUpdateAbilities(__instance);
         }
     }
 
@@ -17,7 +17,16 @@ namespace AbilityRealizer
     {
         public static void Prefix(Pilot __instance)
         {
-            Main.TryUpdateAbilitiesFromTree(__instance.pilotDef);
+            Main.TryUpdateAbilities(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(Pilot), "AddToTeam")]
+    public static class Pilot_AddToTeam_Patch
+    {
+        public static void Postfix(Pilot __instance)
+        {
+            Main.TryUpdateAbilities(__instance);
         }
     }
 }

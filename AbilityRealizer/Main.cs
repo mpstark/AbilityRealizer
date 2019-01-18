@@ -44,6 +44,11 @@ namespace AbilityRealizer
             return null;
         }
 
+        public static bool HasAbilityDef(DataManager dm, string abilityName)
+        {
+            return dm.AbilityDefs.TryGet(abilityName, out var _);
+        }
+
         public static List<string> GetPrimaryAbilitiesForPilot(DataManager dm, PilotDef pilotDef)
         {
             var primaryAbilities = new List<string>();
@@ -137,12 +142,43 @@ namespace AbilityRealizer
 
 
         // MEAT
-        internal static void TryUpdateAbilitiesFromTree(PilotDef pilotDef)
+        internal static void TryUpdateAbilities(Pilot pilot)
         {
             Setup();
 
+            if (dataManager.PilotDefs.Exists(pilot.pilotDef.Description.Id)
+                && pilot.pilotDef == dataManager.PilotDefs.Get(pilot.pilotDef.Description.Id))
+            {
+                // the pilot is set to use the actual pilotdef object in datamanager!
+                // need to make sure that this pilot has it's own unique pilot def before we modify it
+                pilot.ForceRefreshDef();
+            }
+
+            var pilotDef = pilot.pilotDef;
+            var reloadAbilities = false;
+
+            reloadAbilities |= UpdateAbilitiesFromTree(pilotDef);
+            reloadAbilities |= UpdateAbilitiesFromTags(pilotDef);
+
+            if (pilot.Team != null)
+                reloadAbilities |= UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction);
+
+            if (reloadAbilities)
+            {
+                if (pilotDef.AbilityDefs != null)
+                    pilotDef.AbilityDefs.Clear();
+
+                if (pilotDef.DataManager == null)
+                    pilotDef.DataManager = dataManager;
+
+                pilotDef.ForceRefreshAbilityDefs();
+            }
+        }
+
+        internal static bool UpdateAbilitiesFromTree(PilotDef pilotDef)
+        {
             if (pilotDef.abilityDefNames == null)
-                return;
+                return false;
 
             var matchingAbilities = new List<string>();
             var missingAbilities = new List<string>();
@@ -160,9 +196,9 @@ namespace AbilityRealizer
             {
                 if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)) &&
                     ((Settings.RemoveNonTreeAbilities && !progressionAbilities.Contains(abilityName))
-                        || GetAbilityDef(dataManager, abilityName) == null))
+                        || !HasAbilityDef(dataManager, abilityName)))
                 {
-                    HBSLog.Log($"{pilotDef.Description.Id}: Forgetting {abilityName}");
+                    HBSLog.Log($"{pilotDef.Description.Id}: Removing '{abilityName}'");
                     pilotDef.abilityDefNames.RemoveAll(x => x == abilityName);
                     reloadAbilities = true;
                 }
@@ -174,22 +210,68 @@ namespace AbilityRealizer
                 if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)) &&
                     Settings.AddTreeAbilities && CanLearnAbility(dataManager, pilotDef, abilityName))
                 {
-                    HBSLog.Log($"{pilotDef.Description.Id}: Learning {abilityName}");
+                    HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from tree");
                     pilotDef.abilityDefNames.Add(abilityName);
                     reloadAbilities = true;
                 }
             }
 
-            if (reloadAbilities)
+            return reloadAbilities;
+        }
+
+        internal static bool UpdateAbilitiesFromTags(PilotDef pilotDef)
+        {
+            var reloadAbilities = false;
+
+            foreach (var tag in pilotDef.PilotTags)
             {
-                if (pilotDef.AbilityDefs != null)
-                    pilotDef.AbilityDefs.Clear();
+                if (Settings.TagAbilities.ContainsKey(tag))
+                {
+                    foreach (var abilityName in Settings.TagAbilities[tag])
+                    {
+                        if (!HasAbilityDef(dataManager, abilityName))
+                        {
+                            HBSLog.LogWarning($"Tried to add {abilityName} from tag {tag}, but ability not found!");
+                            continue;
+                        }
 
-                if (pilotDef.DataManager == null)
-                    pilotDef.DataManager = dataManager;
-
-                pilotDef.ForceRefreshAbilityDefs();
+                        if (!pilotDef.abilityDefNames.Contains(abilityName))
+                        {
+                            HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from tag '{tag}'");
+                            pilotDef.abilityDefNames.Add(abilityName);
+                            reloadAbilities = true;
+                        }
+                    }
+                }
             }
+
+            return reloadAbilities;
+        }
+
+        internal static bool UpdateAbilitiesFromFaction(PilotDef pilotDef, Faction faction)
+        {
+            var reloadAbilities = false;
+
+            if (Settings.FactionAbilities.ContainsKey(faction))
+            {
+                foreach (var abilityName in Settings.FactionAbilities[faction])
+                {
+                    if (!HasAbilityDef(dataManager, abilityName))
+                    {
+                        HBSLog.LogWarning($"Tried to add {abilityName} from faction {faction}, but ability not found!");
+                        continue;
+                    }
+
+                    if (!pilotDef.abilityDefNames.Contains(abilityName))
+                    {
+                        HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from faction '{faction}'");
+                        pilotDef.abilityDefNames.Add(abilityName);
+                        reloadAbilities = true;
+                    }
+                }
+            }
+
+            return reloadAbilities;
         }
     }
 }

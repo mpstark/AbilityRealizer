@@ -10,6 +10,8 @@
     "Settings": {
         "AddTreeAbilities": true,
         "RemoveNonTreeAbilities": false,
-        "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ]
+        "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ],
+        "FactionAbilities": {},
+        "TagAbilities":  {}
     }
 }
