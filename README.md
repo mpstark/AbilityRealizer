@@ -16,6 +16,14 @@ Provide support for modding the ability tree and abilities without requiring mod
 
 * Can swap abilities for the AI (until adding to the AI is added)
 
+### Ignoring Pilots By Tag
+
+Pilots that have any of these tags will be ignored
+
+```json
+"IgnorePilotsWithTags": [ "pilot_release_skirmish", "pilot_release_ksbeta" ]
+```
+
 ### Adding Abilities based on Faction/Tag
 
 Add to the `FactionAbilities` or `TagAbilities` in the settings
