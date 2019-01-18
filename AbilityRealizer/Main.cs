@@ -161,7 +161,12 @@ namespace AbilityRealizer
             reloadAbilities |= UpdateAbilitiesFromTags(pilotDef);
 
             if (pilot.Team != null)
+            {
                 reloadAbilities |= UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction);
+
+                if (pilot.Team.TeamController == TeamController.Computer)
+                    reloadAbilities |= SwapAIAbilties(pilotDef);
+            }
 
             if (reloadAbilities)
             {
@@ -270,6 +275,44 @@ namespace AbilityRealizer
                     }
                 }
             }
+
+            return reloadAbilities;
+        }
+
+        internal static bool SwapAIAbilties(PilotDef pilotDef)
+        {
+            var reloadAbilities = false;
+
+            var addAbilities = new List<string>();
+            var removeAbilities = new List<string>();
+
+            foreach (var abilityName in pilotDef.abilityDefNames)
+            {
+                if (Settings.SwapAIAbilities.ContainsKey(abilityName))
+                {
+                    var swappedAbilityName = Settings.SwapAIAbilities[abilityName];
+
+                    if (!HasAbilityDef(dataManager, swappedAbilityName))
+                    {
+                        HBSLog.LogWarning($"Tried to swap {swappedAbilityName} for {abilityName} for AI, but ability not found!");
+                        continue;
+                    }
+
+                    if (!pilotDef.abilityDefNames.Contains(swappedAbilityName))
+                    {
+                        HBSLog.Log($"{pilotDef.Description.Id}: Swapping '{swappedAbilityName}' for '{abilityName}' for AI");
+                        removeAbilities.Add(abilityName);
+                        addAbilities.Add(swappedAbilityName);
+                        reloadAbilities = true;
+                    }
+                }
+            }
+
+            foreach (var abilityName in removeAbilities)
+                pilotDef.abilityDefNames.Remove(abilityName);
+
+            foreach (var abilityName in addAbilities)
+                pilotDef.abilityDefNames.Add(abilityName);
 
             return reloadAbilities;
         }

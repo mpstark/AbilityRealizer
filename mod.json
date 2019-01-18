@@ -12,6 +12,7 @@
         "RemoveNonTreeAbilities": false,
         "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ],
         "FactionAbilities": {},
-        "TagAbilities":  {}
+        "TagAbilities": {},
+        "SwapAIAbilities": {}
     }
 }
