@@ -12,8 +12,39 @@ Provide support for modding the ability tree and abilities without requiring mod
 
 * Changes the barracks UI to show tooltips for passive abilities that are not primary abilities
 
+* Can add abilities based on Faction or Tag
+
+* Can swap abilities for the AI (until adding to the AI is added)
+
+### Adding Abilities based on Faction/Tag
+
+Add to the `FactionAbilities` or `TagAbilities` in the settings
+
+```json
+"FactionAbilities": {
+    "AuriganPirates": [ "MyAbilityDef1", "MyAbilityDef2" ]
+},
+```
+
+```json
+"TagAbilities": {
+    "commander_career_soldier": [ "MyAbilityDef3", "MyAbilityDef4" ]
+},
+```
+
+### Swapping AI Abilities
+
+Add to the `SwapAIAbilities` in the settings
+
+```json
+"SwapAIAbilities": {
+    "AbilityDefG8": "AbilityDefG8AI"
+},
+```
+
 ## Future Plans
 
 * Provide some sort of mechanism for allowing AI pilots to use active abilities that have been modded in
 
 * Update all save information to remove/update effects from abilities that have been removed/updated (low prio)
+
