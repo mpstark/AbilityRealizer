@@ -148,7 +148,7 @@ namespace AbilityRealizer
 
             // skip pilots with specified pilot tags
             foreach (var tag in pilot.pilotDef.PilotTags)
-                if (Settings.IgnorePilotsWithTags.Contains(tag))
+                if (Settings.IgnorePilotsWithTags.Exists(x => tag.StartsWith(x)))
                     return;
 
             if (dataManager.PilotDefs.Exists(pilot.pilotDef.Description.Id)
