@@ -11,6 +11,7 @@
         "AddTreeAbilities": true,
         "RemoveNonTreeAbilities": false,
         "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ],
+        "IgnorePilotsWithTags": [],
         "FactionAbilities": {},
         "TagAbilities": {},
         "SwapAIAbilities": {}

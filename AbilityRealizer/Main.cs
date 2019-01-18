@@ -146,6 +146,11 @@ namespace AbilityRealizer
         {
             Setup();
 
+            // skip pilots with specified pilot tags
+            foreach (var tag in pilot.pilotDef.PilotTags)
+                if (Settings.IgnorePilotsWithTags.Contains(tag))
+                    return;
+
             if (dataManager.PilotDefs.Exists(pilot.pilotDef.Description.Id)
                 && pilot.pilotDef == dataManager.PilotDefs.Get(pilot.pilotDef.Description.Id))
             {
