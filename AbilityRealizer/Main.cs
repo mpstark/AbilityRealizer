@@ -162,15 +162,15 @@ namespace AbilityRealizer
             var pilotDef = pilot.pilotDef;
             var reloadAbilities = false;
 
-            reloadAbilities |= UpdateAbilitiesFromTree(pilotDef);
-            reloadAbilities |= UpdateAbilitiesFromTags(pilotDef);
+            reloadAbilities = UpdateAbilitiesFromTree(pilotDef) | reloadAbilities;
+            reloadAbilities = UpdateAbilitiesFromTags(pilotDef) | reloadAbilities;
 
             if (pilot.Team != null)
             {
-                reloadAbilities |= UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction);
+                reloadAbilities = UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction) | reloadAbilities;
 
                 if (pilot.Team.TeamController == TeamController.Computer)
-                    reloadAbilities |= SwapAIAbilties(pilotDef);
+                    reloadAbilities = SwapAIAbilties(pilotDef) | reloadAbilities;
             }
 
             if (reloadAbilities)
