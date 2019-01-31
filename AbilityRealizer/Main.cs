@@ -28,20 +28,13 @@ namespace AbilityRealizer
         // UTIL
         public static bool IsFirstLevelAbility(AbilityDef ability)
         {
-            if (ability.IsPrimaryAbility && ability.ReqSkillLevel < 8)
-                return true;
-
-            return false;
+            return ability.IsPrimaryAbility && ability.ReqSkillLevel < 8;
         }
 
         public static AbilityDef GetAbilityDef(DataManager dm, string abilityName)
         {
             var hasAbility = dm.AbilityDefs.TryGet(abilityName, out var abilityDef);
-
-            if (hasAbility)
-                return abilityDef;
-
-            return null;
+            return hasAbility ? abilityDef : null;
         }
 
         public static bool HasAbilityDef(DataManager dm, string abilityName)
@@ -83,17 +76,19 @@ namespace AbilityRealizer
             // can only have 2 first level abilities
             var firstLevelAbilities = 0;
             foreach (var ability in primaryAbilities)
+            {
                 if (IsFirstLevelAbility(GetAbilityDef(dm, ability)))
                     firstLevelAbilities++;
+            }
 
             return firstLevelAbilities < 2;
         }
 
-        public static void CheckAbilitiesFromProgession(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
+        public static void CheckAbilitiesFromProgression(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
         {
-            for (int i = 0; i < progressionTable.Length && i < skillLevel; i++)
+            for (var i = 0; i < progressionTable.Length && i < skillLevel; i++)
             {
-                for (int j = 0; j < progressionTable[i].Length; j++)
+                for (var j = 0; j < progressionTable[i].Length; j++)
                 {
                     var abilityName = progressionTable[i][j];
 
@@ -107,7 +102,7 @@ namespace AbilityRealizer
 
 
         // SETUP
-        private static bool IsSetup = false;
+        private static bool IsSetup;
         private static SimGameConstants constants;
         private static DataManager dataManager;
         private static List<string> progressionAbilities;
@@ -121,8 +116,9 @@ namespace AbilityRealizer
             dataManager = LazySingletonBehavior<UnityGameInstance>.Instance.Game.DataManager;
 
             // make sure that datamanager has gotten all of the abilities
-            dataManager.RequestAllResourcesOfType(BattleTechResourceType.AbilityDef);
-            dataManager.ProcessRequests();
+            var loadRequest = dataManager.CreateLoadRequest(x => HBSLog.Log("ABILITY DEFS LOADED"), true);
+            loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.AbilityDef);
+            loadRequest.ProcessRequests();
 
             progressionAbilities = new List<string>();
 
@@ -130,10 +126,10 @@ namespace AbilityRealizer
             var progressionTables = new List<string[][]> { constants.Progression.GunnerySkills, constants.Progression.PilotingSkills, constants.Progression.GutsSkills, constants.Progression.TacticsSkills };
             foreach (var progressionTable in progressionTables)
             {
-                for (int i = 0; i < progressionTable.Length; i++)
+                foreach (var abilityTable in progressionTable)
                 {
-                    for (int j = 0; j < progressionTable[i].Length; j++)
-                        progressionAbilities.Add(progressionTable[i][j]);
+                    foreach (var abilityName in abilityTable)
+                        progressionAbilities.Add(abilityName);
                 }
             }
 
@@ -148,8 +144,10 @@ namespace AbilityRealizer
 
             // skip pilots with specified pilot tags
             foreach (var tag in pilot.pilotDef.PilotTags)
+            {
                 if (Settings.IgnorePilotsWithTags.Exists(x => tag.StartsWith(x)))
                     return;
+            }
 
             if (dataManager.PilotDefs.Exists(pilot.pilotDef.Description.Id)
                 && pilot.pilotDef == dataManager.PilotDefs.Get(pilot.pilotDef.Description.Id))
@@ -162,15 +160,15 @@ namespace AbilityRealizer
             var pilotDef = pilot.pilotDef;
             var reloadAbilities = false;
 
-            reloadAbilities = UpdateAbilitiesFromTree(pilotDef) | reloadAbilities;
-            reloadAbilities = UpdateAbilitiesFromTags(pilotDef) | reloadAbilities;
+            reloadAbilities |= UpdateAbilitiesFromTree(pilotDef);
+            reloadAbilities |= UpdateAbilitiesFromTags(pilotDef);
 
             if (pilot.Team != null)
             {
                 reloadAbilities = UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction) | reloadAbilities;
 
                 if (pilot.Team.TeamController == TeamController.Computer)
-                    reloadAbilities = SwapAIAbilties(pilotDef) | reloadAbilities;
+                    reloadAbilities |= SwapAIAbilities(pilotDef);
             }
 
             if (reloadAbilities)
@@ -193,10 +191,10 @@ namespace AbilityRealizer
             var matchingAbilities = new List<string>();
             var missingAbilities = new List<string>();
 
-            CheckAbilitiesFromProgession(pilotDef.abilityDefNames, constants.Progression.GunnerySkills, pilotDef.SkillGunnery, missingAbilities, matchingAbilities);
-            CheckAbilitiesFromProgession(pilotDef.abilityDefNames, constants.Progression.PilotingSkills, pilotDef.SkillPiloting, missingAbilities, matchingAbilities);
-            CheckAbilitiesFromProgession(pilotDef.abilityDefNames, constants.Progression.GutsSkills, pilotDef.SkillGuts, missingAbilities, matchingAbilities);
-            CheckAbilitiesFromProgession(pilotDef.abilityDefNames, constants.Progression.TacticsSkills, pilotDef.SkillTactics, missingAbilities, matchingAbilities);
+            CheckAbilitiesFromProgression(pilotDef.abilityDefNames, constants.Progression.GunnerySkills, pilotDef.SkillGunnery, missingAbilities, matchingAbilities);
+            CheckAbilitiesFromProgression(pilotDef.abilityDefNames, constants.Progression.PilotingSkills, pilotDef.SkillPiloting, missingAbilities, matchingAbilities);
+            CheckAbilitiesFromProgression(pilotDef.abilityDefNames, constants.Progression.GutsSkills, pilotDef.SkillGuts, missingAbilities, matchingAbilities);
+            CheckAbilitiesFromProgression(pilotDef.abilityDefNames, constants.Progression.TacticsSkills, pilotDef.SkillTactics, missingAbilities, matchingAbilities);
 
             var reloadAbilities = false;
             var extraAbilities = pilotDef.abilityDefNames.Except(matchingAbilities).ToList();
@@ -235,22 +233,22 @@ namespace AbilityRealizer
 
             foreach (var tag in pilotDef.PilotTags)
             {
-                if (Settings.TagAbilities.ContainsKey(tag))
-                {
-                    foreach (var abilityName in Settings.TagAbilities[tag])
-                    {
-                        if (!HasAbilityDef(dataManager, abilityName))
-                        {
-                            HBSLog.LogWarning($"Tried to add {abilityName} from tag {tag}, but ability not found!");
-                            continue;
-                        }
+                if (!Settings.TagAbilities.ContainsKey(tag))
+                    continue;
 
-                        if (!pilotDef.abilityDefNames.Contains(abilityName))
-                        {
-                            HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from tag '{tag}'");
-                            pilotDef.abilityDefNames.Add(abilityName);
-                            reloadAbilities = true;
-                        }
+                foreach (var abilityName in Settings.TagAbilities[tag])
+                {
+                    if (!HasAbilityDef(dataManager, abilityName))
+                    {
+                        HBSLog.LogWarning($"Tried to add {abilityName} from tag {tag}, but ability not found!");
+                        continue;
+                    }
+
+                    if (!pilotDef.abilityDefNames.Contains(abilityName))
+                    {
+                        HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from tag '{tag}'");
+                        pilotDef.abilityDefNames.Add(abilityName);
+                        reloadAbilities = true;
                     }
                 }
             }
@@ -262,29 +260,29 @@ namespace AbilityRealizer
         {
             var reloadAbilities = false;
 
-            if (Settings.FactionAbilities.ContainsKey(faction))
-            {
-                foreach (var abilityName in Settings.FactionAbilities[faction])
-                {
-                    if (!HasAbilityDef(dataManager, abilityName))
-                    {
-                        HBSLog.LogWarning($"Tried to add {abilityName} from faction {faction}, but ability not found!");
-                        continue;
-                    }
+            if (!Settings.FactionAbilities.ContainsKey(faction))
+                return false;
 
-                    if (!pilotDef.abilityDefNames.Contains(abilityName))
-                    {
-                        HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from faction '{faction}'");
-                        pilotDef.abilityDefNames.Add(abilityName);
-                        reloadAbilities = true;
-                    }
+            foreach (var abilityName in Settings.FactionAbilities[faction])
+            {
+                if (!HasAbilityDef(dataManager, abilityName))
+                {
+                    HBSLog.LogWarning($"Tried to add {abilityName} from faction {faction}, but ability not found!");
+                    continue;
+                }
+
+                if (!pilotDef.abilityDefNames.Contains(abilityName))
+                {
+                    HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from faction '{faction}'");
+                    pilotDef.abilityDefNames.Add(abilityName);
+                    reloadAbilities = true;
                 }
             }
 
             return reloadAbilities;
         }
 
-        internal static bool SwapAIAbilties(PilotDef pilotDef)
+        internal static bool SwapAIAbilities(PilotDef pilotDef)
         {
             var reloadAbilities = false;
 
@@ -293,23 +291,23 @@ namespace AbilityRealizer
 
             foreach (var abilityName in pilotDef.abilityDefNames)
             {
-                if (Settings.SwapAIAbilities.ContainsKey(abilityName))
+                if (!Settings.SwapAIAbilities.ContainsKey(abilityName))
+                    continue;
+
+                var swappedAbilityName = Settings.SwapAIAbilities[abilityName];
+
+                if (!HasAbilityDef(dataManager, swappedAbilityName))
                 {
-                    var swappedAbilityName = Settings.SwapAIAbilities[abilityName];
+                    HBSLog.LogWarning($"Tried to swap {swappedAbilityName} for {abilityName} for AI, but ability not found!");
+                    continue;
+                }
 
-                    if (!HasAbilityDef(dataManager, swappedAbilityName))
-                    {
-                        HBSLog.LogWarning($"Tried to swap {swappedAbilityName} for {abilityName} for AI, but ability not found!");
-                        continue;
-                    }
-
-                    if (!pilotDef.abilityDefNames.Contains(swappedAbilityName))
-                    {
-                        HBSLog.Log($"{pilotDef.Description.Id}: Swapping '{swappedAbilityName}' for '{abilityName}' for AI");
-                        removeAbilities.Add(abilityName);
-                        addAbilities.Add(swappedAbilityName);
-                        reloadAbilities = true;
-                    }
+                if (!pilotDef.abilityDefNames.Contains(swappedAbilityName))
+                {
+                    HBSLog.Log($"{pilotDef.Description.Id}: Swapping '{swappedAbilityName}' for '{abilityName}' for AI");
+                    removeAbilities.Add(abilityName);
+                    addAbilities.Add(swappedAbilityName);
+                    reloadAbilities = true;
                 }
             }
 
