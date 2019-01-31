@@ -4,7 +4,7 @@ using Harmony;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global
 
-namespace AbilityRealizer
+namespace AbilityRealizer.Patches
 {
     [HarmonyPatch(typeof(Pilot), "InitAbilities")]
     public static class Pilot_InitAbilities_Patch

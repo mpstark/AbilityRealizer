@@ -1,16 +1,16 @@
-﻿using BattleTech;
+﻿using System.Linq;
+using BattleTech;
 using BattleTech.UI;
+using BattleTech.UI.Tooltips;
 using Harmony;
 using HBS;
-using SVGImporter;
-using System.Linq;
-using BattleTech.UI.Tooltips;
 using HBS.Extensions;
+using SVGImporter;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global
 
-namespace AbilityRealizer
+namespace AbilityRealizer.Patches
 {
     [HarmonyPatch(typeof(SGBarracksSkillPip), "Initialize")]
     public static class SGBarracksSkillPip_Initialize_Patch
