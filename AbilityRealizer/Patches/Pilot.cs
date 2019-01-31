@@ -1,6 +1,9 @@
 ﻿using BattleTech;
 using Harmony;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
+
 namespace AbilityRealizer
 {
     [HarmonyPatch(typeof(Pilot), "InitAbilities")]
