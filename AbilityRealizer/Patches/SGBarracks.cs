@@ -4,6 +4,8 @@ using Harmony;
 using HBS;
 using SVGImporter;
 using System.Linq;
+using BattleTech.UI.Tooltips;
+using HBS.Extensions;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global
@@ -32,9 +34,9 @@ namespace AbilityRealizer
             if (passiveAbility == null)
                 Traverse.Create(__instance).Field("skillPassiveTraitDot").GetValue<SVGImage>().gameObject.SetActive(false);
 
-            //if (passiveAbility != null)
-            //    Traverse.Create(__instance).Field("AbilityTooltip").GetValue<HBSTooltip>()
-            //        .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(passiveAbility.Description));
+            if (passiveAbility != null)
+                __instance.gameObject.FindFirstChildNamed("obj-pip").GetComponent<HBSTooltip>()
+                    .SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(passiveAbility.Description));
         }
     }
 }
