@@ -14,6 +14,11 @@ namespace AbilityRealizer
         internal static ModSettings Settings;
         internal static ILog HBSLog;
 
+        private static bool IsSetup;
+        private static SimGameConstants constants;
+        private static DataManager dataManager;
+        private static List<string> progressionAbilities;
+
 
         // ENTRY POINT
         public static void Init(string modDir, string modSettings)
@@ -26,23 +31,23 @@ namespace AbilityRealizer
 
 
         // UTIL
-        public static bool IsFirstLevelAbility(AbilityDef ability)
+        private static bool IsFirstLevelAbility(AbilityDef ability)
         {
             return ability.IsPrimaryAbility && ability.ReqSkillLevel < 8;
         }
 
-        public static AbilityDef GetAbilityDef(DataManager dm, string abilityName)
+        private static AbilityDef GetAbilityDef(DataManager dm, string abilityName)
         {
             var hasAbility = dm.AbilityDefs.TryGet(abilityName, out var abilityDef);
             return hasAbility ? abilityDef : null;
         }
 
-        public static bool HasAbilityDef(DataManager dm, string abilityName)
+        private static bool HasAbilityDef(DataManager dm, string abilityName)
         {
             return dm.AbilityDefs.TryGet(abilityName, out var _);
         }
 
-        public static List<string> GetPrimaryAbilitiesForPilot(DataManager dm, PilotDef pilotDef)
+        private static List<string> GetPrimaryAbilitiesForPilot(DataManager dm, PilotDef pilotDef)
         {
             var primaryAbilities = new List<string>();
             foreach (var abilityName in pilotDef.abilityDefNames)
@@ -54,7 +59,7 @@ namespace AbilityRealizer
             return primaryAbilities;
         }
 
-        public static bool CanLearnAbility(DataManager dm, PilotDef pilotDef, string abilityName)
+        private static bool CanLearnAbility(DataManager dm, PilotDef pilotDef, string abilityName)
         {
             var hasAbility = dm.AbilityDefs.TryGet(abilityName, out var abilityDef);
 
@@ -84,7 +89,7 @@ namespace AbilityRealizer
             return firstLevelAbilities < 2;
         }
 
-        public static void CheckAbilitiesFromProgression(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
+        private static void CheckAbilitiesFromProgression(List<string> pilotAbilityNames, string[][] progressionTable, int skillLevel, List<string> missingAbilities, List<string> matchingAbilities)
         {
             for (var i = 0; i < progressionTable.Length && i < skillLevel; i++)
             {
@@ -102,12 +107,7 @@ namespace AbilityRealizer
 
 
         // SETUP
-        private static bool IsSetup;
-        private static SimGameConstants constants;
-        private static DataManager dataManager;
-        private static List<string> progressionAbilities;
-
-        private static void Setup()
+        internal static void Setup()
         {
             if (IsSetup)
                 return;
@@ -140,8 +140,6 @@ namespace AbilityRealizer
         // MEAT
         internal static void TryUpdateAbilities(Pilot pilot)
         {
-            Setup();
-
             // skip pilots with specified pilot tags
             foreach (var tag in pilot.pilotDef.PilotTags)
             {
@@ -183,7 +181,7 @@ namespace AbilityRealizer
             }
         }
 
-        internal static bool UpdateAbilitiesFromTree(PilotDef pilotDef)
+        private static bool UpdateAbilitiesFromTree(PilotDef pilotDef)
         {
             if (pilotDef.abilityDefNames == null)
                 return false;
@@ -227,7 +225,7 @@ namespace AbilityRealizer
             return reloadAbilities;
         }
 
-        internal static bool UpdateAbilitiesFromTags(PilotDef pilotDef)
+        private static bool UpdateAbilitiesFromTags(PilotDef pilotDef)
         {
             var reloadAbilities = false;
 
@@ -256,7 +254,7 @@ namespace AbilityRealizer
             return reloadAbilities;
         }
 
-        internal static bool UpdateAbilitiesFromFaction(PilotDef pilotDef, Faction faction)
+        private static bool UpdateAbilitiesFromFaction(PilotDef pilotDef, Faction faction)
         {
             var reloadAbilities = false;
 
@@ -282,7 +280,7 @@ namespace AbilityRealizer
             return reloadAbilities;
         }
 
-        internal static bool SwapAIAbilities(PilotDef pilotDef)
+        private static bool SwapAIAbilities(PilotDef pilotDef)
         {
             var reloadAbilities = false;
 

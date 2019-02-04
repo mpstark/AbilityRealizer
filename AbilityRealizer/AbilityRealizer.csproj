@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="ModSettings.cs" />
+    <Compile Include="Patches\MainMenu.cs" />
     <Compile Include="Patches\Pilot.cs" />
     <Compile Include="Patches\SGBarracks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
