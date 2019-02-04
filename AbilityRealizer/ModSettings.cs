@@ -3,12 +3,17 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
+// ReSharper disable CollectionNeverUpdated.Global
+// ReSharper disable FieldCanBeMadeReadOnly.Global
+
 namespace AbilityRealizer
 {
     internal class ModSettings
     {
+        public bool DumpFixedPilotDefs = true;
         public bool AddTreeAbilities = true;
         public bool RemoveNonTreeAbilities = false;
+        public bool RemoveDuplicateAbilities = true;
         public List<string> IgnoreAbilities = new List<string>();
         public List<string> IgnorePilotsWithTags = new List<string>();
         public Dictionary<Faction, List<string>> FactionAbilities = new Dictionary<Faction, List<string>>();

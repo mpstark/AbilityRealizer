@@ -4,6 +4,7 @@ using Harmony;
 using HBS;
 using HBS.Logging;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -13,6 +14,7 @@ namespace AbilityRealizer
     {
         internal static ModSettings Settings;
         internal static ILog HBSLog;
+        internal static string modDirectory;
 
         private static bool IsSetup;
         private static SimGameConstants constants;
@@ -27,6 +29,7 @@ namespace AbilityRealizer
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             HBSLog = Logger.GetLogger("AbilityRealizer");
             Settings = ModSettings.Parse(modSettings);
+            modDirectory = modDir;
         }
 
 
@@ -116,8 +119,23 @@ namespace AbilityRealizer
             dataManager = LazySingletonBehavior<UnityGameInstance>.Instance.Game.DataManager;
 
             // make sure that datamanager has gotten all of the abilities
-            var loadRequest = dataManager.CreateLoadRequest(x => HBSLog.Log("ABILITY DEFS LOADED"), true);
+            var loadRequest = dataManager.CreateLoadRequest(x =>
+            {
+                HBSLog.Log("AbilityDefs Loaded");
+
+                if (!Settings.DumpFixedPilotDefs)
+                    return;
+
+                HBSLog.Log("PilotDefs loaded");
+                DumpFixedPilotDefs();
+            });
+
             loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.AbilityDef);
+
+            // if dumping pilotDefs, request them
+            if (Settings.DumpFixedPilotDefs)
+                loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.PilotDef);
+
             loadRequest.ProcessRequests();
 
             progressionAbilities = new List<string>();
@@ -138,6 +156,31 @@ namespace AbilityRealizer
 
 
         // MEAT
+        private static void DumpFixedPilotDefs()
+        {
+            if (dataManager == null)
+                return;
+
+            var directory = Path.Combine(modDirectory, "PilotDefDump");
+            Directory.CreateDirectory(directory);
+            HBSLog.Log($"Dumping fixed PilotDefs to {directory}");
+
+            foreach (var pilotID in dataManager.PilotDefs.Keys)
+            {
+                var pilotDef = dataManager.PilotDefs.Get(pilotID);
+                var pilotDefCopy = new PilotDef(pilotDef, pilotDef.ExperienceSpent, pilotDef.ExperienceUnspent,
+                    pilotDef.Injuries, pilotDef.LethalInjury, pilotDef.LifetimeInjuries, pilotDef.MechKills,
+                    pilotDef.OtherKills, pilotDef.PilotTags);
+
+                if (!UpdateAbilitiesFromTree(pilotDefCopy))
+                    continue;
+
+                // pilotDef updated, dump it out to dir
+                pilotDefCopy.abilityDefNames.Sort();
+                File.WriteAllText(Path.Combine(directory, pilotID+".json"), pilotDefCopy.ToJSON());
+            }
+        }
+
         internal static void TryUpdateAbilities(Pilot pilot)
         {
             // skip pilots with specified pilot tags
@@ -197,6 +240,9 @@ namespace AbilityRealizer
             var reloadAbilities = false;
             var extraAbilities = pilotDef.abilityDefNames.Except(matchingAbilities).ToList();
 
+            if (GetPrimaryAbilitiesForPilot(dataManager, pilotDef).Count > 3)
+                HBSLog.Log($"{pilotDef.Description.Id}: Has too many primary abilities -- not doing anything about it");
+
             // remove abilities that don't exist anymore
             foreach (var abilityName in extraAbilities)
             {
@@ -217,6 +263,20 @@ namespace AbilityRealizer
                     Settings.AddTreeAbilities && CanLearnAbility(dataManager, pilotDef, abilityName))
                 {
                     HBSLog.Log($"{pilotDef.Description.Id}: Adding '{abilityName}' from tree");
+                    pilotDef.abilityDefNames.Add(abilityName);
+                    reloadAbilities = true;
+                }
+            }
+
+            // find duplicates and remove them
+            var duplicateAbilities = pilotDef.abilityDefNames.GroupBy(x => x).Where(x => x.Count() > 1).Select(x => x.Key);
+            foreach (var abilityName in duplicateAbilities)
+            {
+                if (!Settings.IgnoreAbilities.Exists(x => abilityName.StartsWith(x)) &&
+                    Settings.RemoveDuplicateAbilities)
+                {
+                    HBSLog.Log($"{pilotDef.Description.Id}: Removing duplicate '{abilityName}'s");
+                    pilotDef.abilityDefNames.RemoveAll(x => x == abilityName);
                     pilotDef.abilityDefNames.Add(abilityName);
                     reloadAbilities = true;
                 }

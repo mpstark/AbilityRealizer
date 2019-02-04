@@ -8,8 +8,10 @@
     "Website": "www.github.com/mpstark/AbilityRealizer",
 
     "Settings": {
+        "DumpFixedPilotDefs": false,
         "AddTreeAbilities": true,
         "RemoveNonTreeAbilities": false,
+        "RemoveDuplicateAbilities": true,
         "IgnoreAbilities": [ "TraitDefWeaponHit", "TraitDefMeleeHit" ],
         "IgnorePilotsWithTags": [],
         "FactionAbilities": {},
