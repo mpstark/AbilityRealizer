@@ -8,7 +8,7 @@
     "Website": "www.github.com/mpstark/AbilityRealizer",
 
     "Settings": {
-        "DumpFixedPilotDefs": false,
+        "DumpFixedPilotDefMerges": false,
         "AddTreeAbilities": true,
         "RemoveNonTreeAbilities": false,
         "RemoveDuplicateAbilities": true,

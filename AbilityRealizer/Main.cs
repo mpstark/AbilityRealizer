@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AbilityRealizer
 {
@@ -123,17 +125,17 @@ namespace AbilityRealizer
             {
                 HBSLog.Log("AbilityDefs Loaded");
 
-                if (!Settings.DumpFixedPilotDefs)
+                if (!Settings.DumpFixedPilotDefMerges)
                     return;
 
                 HBSLog.Log("PilotDefs loaded");
-                DumpFixedPilotDefs();
+                DumpFixedPilotDefMerges();
             });
 
             loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.AbilityDef);
 
             // if dumping pilotDefs, request them
-            if (Settings.DumpFixedPilotDefs)
+            if (Settings.DumpFixedPilotDefMerges)
                 loadRequest.AddAllOfTypeBlindLoadRequest(BattleTechResourceType.PilotDef);
 
             loadRequest.ProcessRequests();
@@ -156,14 +158,14 @@ namespace AbilityRealizer
 
 
         // MEAT
-        private static void DumpFixedPilotDefs()
+        private static void DumpFixedPilotDefMerges()
         {
             if (dataManager == null)
                 return;
 
             var directory = Path.Combine(modDirectory, "PilotDefDump");
             Directory.CreateDirectory(directory);
-            HBSLog.Log($"Dumping fixed PilotDefs to {directory}");
+            HBSLog.Log($"Dumping fixed PilotDef merges to {directory}");
 
             foreach (var pilotID in dataManager.PilotDefs.Keys)
             {
@@ -177,7 +179,14 @@ namespace AbilityRealizer
 
                 // pilotDef updated, dump it out to dir
                 pilotDefCopy.abilityDefNames.Sort();
-                File.WriteAllText(Path.Combine(directory, pilotID+".json"), pilotDefCopy.ToJSON());
+
+                var pilotDefJObject = new JObject {{"abilityDefNames", new JArray(pilotDefCopy.abilityDefNames)}};
+                using (var writer = File.CreateText(Path.Combine(directory, pilotID + ".json")))
+                {
+                    var jsonWriter = new JsonTextWriter(writer) {Formatting = Formatting.Indented};
+                    pilotDefJObject.WriteTo(jsonWriter);
+                    jsonWriter.Close();
+                }
             }
         }
 
