@@ -10,7 +10,7 @@ namespace AbilityRealizer
 {
     internal class ModSettings
     {
-        public bool DumpFixedPilotDefMerges = true;
+        public bool DumpFixedPilotDefMerges = false;
         public bool AddTreeAbilities = true;
         public bool RemoveNonTreeAbilities = false;
         public bool RemoveDuplicateAbilities = true;
