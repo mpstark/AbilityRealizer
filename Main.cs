@@ -217,7 +217,7 @@ namespace AbilityRealizer
 
             if (pilot.Team != null)
             {
-                reloadAbilities = UpdateAbilitiesFromFaction(pilotDef, pilot.Team.Faction) | reloadAbilities;
+                reloadAbilities = UpdateAbilitiesFromFaction(pilotDef, pilot.Team.FactionValue) | reloadAbilities;
 
                 if (pilot.Team.TeamController == TeamController.Computer)
                     reloadAbilities |= SwapAIAbilities(pilotDef);
@@ -325,14 +325,14 @@ namespace AbilityRealizer
             return reloadAbilities;
         }
 
-        private static bool UpdateAbilitiesFromFaction(PilotDef pilotDef, Faction faction)
+        private static bool UpdateAbilitiesFromFaction(PilotDef pilotDef, FactionValue faction)
         {
             var reloadAbilities = false;
 
-            if (!Settings.FactionAbilities.ContainsKey(faction))
+            if (!Settings.FactionAbilities.ContainsKey(faction.Name))
                 return false;
 
-            foreach (var abilityName in Settings.FactionAbilities[faction])
+            foreach (var abilityName in Settings.FactionAbilities[faction.Name])
             {
                 if (!HasAbilityDef(dataManager, abilityName))
                 {
